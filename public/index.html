@@ -19,464 +19,266 @@
       --text: #e8e4dc;
       --text2: #777;
       --text3: #444;
-      --photo-border: #f0ede8;
       --radius: 4px;
       --mono: 'Courier New', 'Osaka Mono', monospace;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
 
     /* ── ヘッダー ── */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .logo-mark {
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--amber);
-      border-radius: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      width: 28px; height: 28px; border: 2px solid var(--amber); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center; position: relative;
     }
-    .logo-mark::after {
-      content: '';
-      width: 10px;
-      height: 10px;
-      background: var(--amber);
-      border-radius: 50%;
-    }
-    .logo-text {
-      font-size: 13px;
-      letter-spacing: 0.2em;
-      color: var(--text);
-      text-transform: uppercase;
-    }
-    .logo-text span {
-      color: var(--amber);
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .logo-mark::after { content: ''; width: 10px; height: 10px; background: var(--amber); border-radius: 50%; }
+    .logo-text { font-size: 13px; letter-spacing: 0.2em; color: var(--text); text-transform: uppercase; }
+    .logo-text span { color: var(--amber); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text2);
-      font-family: var(--mono);
-      font-size: 12px;
-      cursor: pointer;
-      border-radius: var(--radius);
-      transition: all 0.15s;
-      white-space: nowrap;
-      letter-spacing: 0.05em;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border: 1px solid var(--border); background: transparent;
+      color: var(--text2); font-family: var(--mono); font-size: 12px; cursor: pointer;
+      border-radius: var(--radius); transition: all 0.15s; white-space: nowrap; letter-spacing: 0.05em;
     }
-    .btn:hover {
-      border-color: var(--border-hover);
-      color: var(--text);
-      background: var(--surface);
-    }
-    .btn-amber {
-      border-color: var(--amber);
-      color: var(--amber);
-    }
-    .btn-amber:hover {
-      background: var(--amber-dim);
-      color: var(--amber);
-    }
-    .btn-amber:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      background: transparent;
-    }
-    .btn-danger {
-      border-color: #3a2020;
-      color: #884444;
-    }
-    .btn-danger:hover {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(224, 82, 82, 0.1);
-    }
+    .btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface); }
+    .btn-amber { border-color: var(--amber); color: var(--amber); }
+    .btn-amber:hover { background: var(--amber-dim); }
+    .btn-amber:disabled { opacity: 0.35; cursor: not-allowed; background: transparent; }
+    .btn-danger { border-color: #3a2020; color: #884444; }
+    .btn-danger:hover { border-color: var(--red); color: var(--red); background: rgba(224,82,82,0.1); }
     .btn svg { flex-shrink: 0; }
 
-    /* ── メインレイアウト ── */
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 32px 24px;
-    }
+    .select-info { font-size: 11px; color: var(--amber); letter-spacing: 0.05em; opacity: 0; transition: opacity 0.15s; }
+    .select-info.visible { opacity: 1; }
+
+    /* ── メイン ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 
     /* ── アップロードゾーン ── */
     .upload-zone {
-      border: 1px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: var(--surface);
-      position: relative;
-      margin-bottom: 32px;
+      border: 1px dashed var(--border); border-radius: var(--radius);
+      padding: 36px 24px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      cursor: pointer; transition: all 0.2s; background: var(--surface);
+      position: relative; margin-bottom: 28px;
     }
     .upload-zone::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: var(--radius);
-      opacity: 0;
-      transition: opacity 0.2s;
+      content: ''; position: absolute; inset: -1px; border-radius: var(--radius);
+      opacity: 0; transition: opacity 0.2s;
       background: radial-gradient(ellipse at center, var(--amber-glow) 0%, transparent 70%);
     }
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      border-color: var(--amber);
-    }
-    .upload-zone:hover::before,
-    .upload-zone.dragover::before {
-      opacity: 1;
-    }
-    .upload-zone.dragover {
-      background: var(--amber-dim);
-    }
-
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--amber); }
+    .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+    .upload-zone.dragover { background: var(--amber-dim); }
     #file-input { display: none; }
+    .upload-icon { width: 44px; height: 44px; color: var(--text3); transition: color 0.2s; }
+    .upload-zone:hover .upload-icon, .upload-zone.dragover .upload-icon { color: var(--amber); }
+    .upload-primary { font-size: 13px; color: var(--text2); letter-spacing: 0.1em; }
+    .upload-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
+    .upload-zone span.hl { color: var(--amber); text-decoration: underline dotted; text-underline-offset: 3px; }
 
-    .upload-icon {
-      width: 48px;
-      height: 48px;
-      color: var(--text3);
-      transition: color 0.2s;
-    }
-    .upload-zone:hover .upload-icon,
-    .upload-zone.dragover .upload-icon {
-      color: var(--amber);
-    }
-
-    .upload-primary {
-      font-size: 13px;
-      color: var(--text2);
-      letter-spacing: 0.1em;
-    }
-    .upload-sub {
-      font-size: 11px;
-      color: var(--text3);
-      letter-spacing: 0.05em;
-    }
-    .upload-zone span.hl {
-      color: var(--amber);
-      text-decoration: underline;
-      text-decoration-style: dotted;
-      text-underline-offset: 3px;
-    }
-
-    /* ── プログレスバー ── */
-    .upload-progress {
-      display: none;
-      margin-bottom: 24px;
-    }
+    /* ── プログレス ── */
+    .upload-progress { display: none; margin-bottom: 20px; }
     .upload-progress.active { display: block; }
-    .progress-label {
-      font-size: 11px;
-      color: var(--text2);
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
+    .progress-label { font-size: 11px; color: var(--text2); letter-spacing: 0.1em; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .progress-bar-bg { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--amber); border-radius: 1px; transition: width 0.3s ease; box-shadow: 0 0 8px var(--amber); }
+
+    /* ── タグバー ── */
+    .tag-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 24px; flex-wrap: wrap;
     }
-    .progress-bar-bg {
-      height: 2px;
-      background: var(--border);
-      border-radius: 1px;
-      overflow: hidden;
+    .tag-bar-label { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; flex-shrink: 0; }
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px; font-size: 11px;
+      letter-spacing: 0.05em; cursor: default; border: 1px solid transparent;
+      transition: all 0.15s;
     }
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--amber);
-      border-radius: 1px;
-      transition: width 0.3s ease;
-      box-shadow: 0 0 8px var(--amber);
+    .tag-pill .tag-del {
+      cursor: pointer; opacity: 0.5; transition: opacity 0.15s;
+      background: none; border: none; color: inherit; font-family: inherit;
+      font-size: 13px; line-height: 1; padding: 0; display: flex; align-items: center;
     }
+    .tag-pill .tag-del:hover { opacity: 1; }
+    .tag-create-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border: 1px dashed var(--border); border-radius: 100px;
+      font-size: 11px; color: var(--text3); cursor: pointer; letter-spacing: 0.05em;
+      background: none; font-family: var(--mono); transition: all 0.15s;
+    }
+    .tag-create-btn:hover { border-color: var(--amber); color: var(--amber); }
+    .tag-create-form { display: none; align-items: center; gap: 6px; }
+    .tag-create-form.active { display: inline-flex; }
+    .tag-create-input {
+      background: var(--surface); border: 1px solid var(--amber); border-radius: 100px;
+      padding: 3px 12px; font-size: 11px; color: var(--text); font-family: var(--mono);
+      outline: none; width: 120px; letter-spacing: 0.05em;
+    }
+    .tag-create-input::placeholder { color: var(--text3); }
+    .tag-create-submit {
+      padding: 3px 10px; border: 1px solid var(--amber); border-radius: 100px;
+      background: none; color: var(--amber); font-size: 11px; cursor: pointer;
+      font-family: var(--mono); transition: all 0.15s; letter-spacing: 0.05em;
+    }
+    .tag-create-submit:hover { background: var(--amber-dim); }
+    .tag-create-cancel { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
 
     /* ── ツールバー ── */
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
+    .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
     .toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-    .toolbar-right { display: flex; align-items: center; gap: 8px; }
-
-    .count-badge {
-      font-size: 11px;
-      color: var(--text3);
-      letter-spacing: 0.05em;
-    }
+    .count-badge { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
     .count-badge .num { color: var(--amber); font-size: 14px; }
-    .select-info {
-      font-size: 11px;
-      color: var(--amber);
-      letter-spacing: 0.05em;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .select-info.visible { opacity: 1; }
 
-    /* ── グリッド ── */
-    .image-grid {
+    /* ── タグセクション ── */
+    .tag-section { margin-bottom: 8px; }
+    .tag-section-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; cursor: pointer; border-radius: var(--radius);
+      transition: background 0.15s; user-select: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tag-section-header:hover { background: var(--surface2); }
+    .section-chevron {
+      width: 14px; height: 14px; flex-shrink: 0; color: var(--text3);
+      transition: transform 0.2s;
+    }
+    .tag-section.open .section-chevron { transform: rotate(90deg); }
+    .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .section-name { font-size: 13px; color: var(--text); letter-spacing: 0.05em; flex: 1; }
+    .section-count { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
+
+    .tag-section-body {
+      overflow: hidden; max-height: 0;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tag-section.open .tag-section-body { max-height: 4000px; }
+    .tag-section-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+      gap: 12px; padding: 12px 0 4px;
     }
 
     /* ── 画像カード ── */
     .image-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; cursor: pointer; position: relative;
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-      position: relative;
-      animation: fadeIn 0.25s ease both;
+      animation: fadeIn 0.2s ease both;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .image-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-2px);
-    }
-    .image-card.selected {
-      border-color: var(--amber);
-      box-shadow: 0 0 0 1px var(--amber), 0 4px 20px var(--amber-dim);
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .image-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .image-card.selected { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber), 0 4px 20px var(--amber-dim); }
 
-    .card-thumb {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      display: block;
-      background: var(--surface2);
-      transition: opacity 0.2s;
-    }
-    .card-thumb[src=""] { opacity: 0; }
-
+    .card-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--surface2); }
     .card-file-icon {
-      width: 100%;
-      aspect-ratio: 4/3;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: var(--surface2);
+      width: 100%; aspect-ratio: 4/3;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; background: var(--surface2);
     }
-    .card-file-icon .file-ext {
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 0.15em;
-      padding: 3px 8px;
-      border-radius: 3px;
+    .card-file-icon svg { opacity: 0.25; }
+    .file-ext-badge {
+      font-size: 10px; font-weight: bold; letter-spacing: 0.15em;
+      padding: 2px 7px; border-radius: 3px;
     }
-    .card-file-icon.pdf .file-ext { color: #e05252; border: 1px solid #e05252; }
-    .card-file-icon.word .file-ext { color: #4a90d9; border: 1px solid #4a90d9; }
-    .card-file-icon svg { opacity: 0.3; }
+    .ext-pdf { color: #e05252; border: 1px solid #e05252; }
+    .ext-word { color: #4a90d9; border: 1px solid #4a90d9; }
 
     .card-check {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: 20px;
-      height: 20px;
-      border: 1.5px solid rgba(255,255,255,0.4);
-      border-radius: 3px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+      position: absolute; top: 8px; left: 8px;
+      width: 20px; height: 20px; border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 3px; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.15s, border-color 0.15s, background 0.15s;
     }
-    .image-card:hover .card-check,
-    .image-card.selected .card-check { opacity: 1; }
-    .image-card.selected .card-check {
-      border-color: var(--amber);
-      background: var(--amber);
-    }
+    .image-card:hover .card-check, .image-card.selected .card-check { opacity: 1; }
+    .image-card.selected .card-check { border-color: var(--amber); background: var(--amber); }
     .card-check svg { color: #000; }
 
     .card-actions {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      display: flex;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.15s;
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
     }
     .image-card:hover .card-actions { opacity: 1; }
     .card-action-btn {
-      width: 28px;
-      height: 28px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      border-radius: 3px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255,255,255,0.7);
-      transition: all 0.15s;
+      width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 3px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.7); transition: all 0.15s;
     }
     .card-action-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+    .card-action-btn.tag-btn:hover { color: var(--amber); border-color: var(--amber); }
     .card-action-btn.delete:hover { color: var(--red); border-color: var(--red); background: rgba(224,82,82,0.2); }
 
-    .card-info {
-      padding: 10px 12px;
-      border-top: 1px solid var(--border);
-    }
-    .card-name {
-      font-size: 11px;
-      color: var(--text);
-      letter-spacing: 0.03em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 3px;
-    }
-    .card-meta {
-      font-size: 10px;
-      color: var(--text3);
-      letter-spacing: 0.03em;
-    }
+    .card-info { padding: 8px 12px; border-top: 1px solid var(--border); }
+    .card-name { font-size: 11px; color: var(--text); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .card-meta { font-size: 10px; color: var(--text3); letter-spacing: 0.03em; }
 
-    /* ── 空状態 ── */
-    .empty-state {
-      text-align: center;
-      padding: 64px 24px;
-      color: var(--text3);
+    /* ── タグピッカー ── */
+    .tag-picker {
+      position: fixed; z-index: 500;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px; min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
       display: none;
     }
+    .tag-picker.open { display: block; animation: popIn 0.12s ease; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(-4px); } to { opacity: 1; transform: none; } }
+    .picker-title { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 8px; }
+    .picker-empty { font-size: 11px; color: var(--text3); padding: 4px 0; }
+    .picker-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 4px; cursor: pointer; border-radius: 3px;
+      transition: background 0.1s; font-size: 12px; letter-spacing: 0.03em;
+    }
+    .picker-item:hover { background: var(--surface); }
+    .picker-check {
+      width: 14px; height: 14px; border: 1.5px solid var(--border);
+      border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.1s;
+    }
+    .picker-item.checked .picker-check { border-color: var(--amber); background: var(--amber); }
+
+    /* ── 空状態・ローディング ── */
+    .empty-state { text-align: center; padding: 64px 24px; color: var(--text3); display: none; }
     .empty-state.visible { display: block; }
     .empty-state p { font-size: 12px; letter-spacing: 0.1em; line-height: 2; }
-
-    /* ── ローディング ── */
-    .loading-state {
-      text-align: center;
-      padding: 64px 24px;
-      color: var(--text3);
-      font-size: 12px;
-      letter-spacing: 0.15em;
-      display: none;
-    }
+    .loading-state { text-align: center; padding: 64px 24px; color: var(--text3); font-size: 12px; letter-spacing: 0.15em; display: none; }
     .loading-state.visible { display: block; }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    .loading-state::after {
-      content: '...';
-      animation: blink 1.2s ease infinite;
-    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .loading-state::after { content: '...'; animation: blink 1.2s infinite; }
 
     /* ── トースト ── */
-    .toast-container {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-    }
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast {
-      padding: 10px 16px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      color: var(--text);
-      animation: toastIn 0.25s ease, toastOut 0.25s ease 2.75s both;
-      max-width: 320px;
+      padding: 10px 16px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 12px; letter-spacing: 0.05em; color: var(--text);
+      animation: toastIn 0.25s ease, toastOut 0.25s ease 2.75s both; max-width: 320px;
     }
     .toast.success { border-color: var(--green); color: var(--green); }
     .toast.error { border-color: var(--red); color: var(--red); }
     .toast.info { border-color: var(--amber); color: var(--amber); }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateX(16px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes toastOut {
-      from { opacity: 1; transform: translateX(0); }
-      to { opacity: 0; transform: translateX(16px); }
-    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(16px); } }
 
-    /* ── スキャンライン装飾 ── */
     body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
     }
-
-    /* ── レスポンシブ ── */
     @media (max-width: 600px) {
       header { padding: 0 16px; }
       main { padding: 20px 16px; }
-      .image-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .tag-section-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
       .logo-text { display: none; }
     }
   </style>
@@ -490,7 +292,7 @@
   </div>
   <div class="header-actions">
     <span class="select-info" id="select-info"></span>
-    <button class="btn" id="btn-select-all" onclick="selectAll()">
+    <button class="btn" onclick="selectAll()">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
         <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
         <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
@@ -519,7 +321,6 @@
 </header>
 
 <main>
-  <!-- アップロードゾーン -->
   <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
     <input type="file" id="file-input" multiple accept="image/*,.pdf,.doc,.docx">
     <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -529,50 +330,69 @@
       <path d="M32 16v-8M28 12l4-4 4 4"/>
     </svg>
     <p class="upload-primary">ここにドラッグ &amp; ドロップ、または<span class="hl">クリックして選択</span></p>
-    <p class="upload-sub">画像 (JPG / PNG / GIF / WebP) &nbsp;·&nbsp; PDF &nbsp;·&nbsp; Word (doc / docx) &nbsp;·&nbsp; 最大 100MB / ファイル</p>
+    <p class="upload-sub">画像 · PDF · Word &nbsp;·&nbsp; 最大 100MB / ファイル</p>
   </div>
 
-  <!-- アップロードプログレス -->
   <div class="upload-progress" id="upload-progress">
     <div class="progress-label">
       <span id="progress-text">アップロード中</span>
       <span id="progress-pct">0%</span>
     </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+  </div>
+
+  <!-- タグバー -->
+  <div class="tag-bar" id="tag-bar">
+    <span class="tag-bar-label">タグ</span>
+    <div id="tag-pills"></div>
+    <button class="tag-create-btn" id="tag-create-btn" onclick="showTagCreateForm()">
+      <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 1v10M1 6h10"/>
+      </svg>
+      タグ作成
+    </button>
+    <div class="tag-create-form" id="tag-create-form">
+      <input class="tag-create-input" id="tag-name-input" placeholder="タグ名" maxlength="20"
+        onkeydown="if(event.key==='Enter')submitCreateTag(); if(event.key==='Escape')hideTagCreateForm()">
+      <button class="tag-create-submit" onclick="submitCreateTag()">追加</button>
+      <button class="tag-create-cancel" onclick="hideTagCreateForm()">✕</button>
     </div>
   </div>
 
   <!-- ツールバー -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <span class="count-badge">
-        <span class="num" id="image-count">0</span> 枚
-      </span>
+      <span class="count-badge"><span class="num" id="file-count">0</span> ファイル</span>
     </div>
   </div>
 
-  <!-- ローディング -->
   <div class="loading-state" id="loading-state">読み込み中</div>
-
-  <!-- 空状態 -->
-  <div class="empty-state" id="empty-state">
-    <p>ファイルなし<br>上のエリアからアップロード</p>
-  </div>
-
-  <!-- 画像グリッド -->
-  <div class="image-grid" id="image-grid"></div>
+  <div class="empty-state" id="empty-state"><p>ファイルなし<br>上のエリアからアップロード</p></div>
+  <div id="sections-container"></div>
 </main>
 
-<!-- トースト -->
+<!-- タグピッカー -->
+<div class="tag-picker" id="tag-picker">
+  <div class="picker-title">タグを設定</div>
+  <div id="picker-items"></div>
+</div>
+
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-  let images = [];
+  // ── 定数 ──
+  const TAG_COLORS = ['#f5a623','#e05252','#4caf78','#4a90d9','#9b59b6','#1abc9c','#e67e22','#e91e8c'];
+  const UNTAGGED_ID = '__untagged__';
+
+  // ── 状態 ──
+  let files = [];
+  let tags = [];
   const selected = new Set();
+  const collapsed = new Set(JSON.parse(localStorage.getItem('cc-collapsed') || '[]'));
+  let pickerFilename = null;
 
   // ── 初期化 ──
-  fetchImages();
+  fetchAll();
 
   // ── ドラッグ&ドロップ ──
   const zone = document.getElementById('upload-zone');
@@ -582,282 +402,377 @@
     e.preventDefault();
     zone.classList.remove('dragover');
     const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?)$/i;
-    const files = [...e.dataTransfer.files].filter(f => allowed.test(f.name));
-    if (files.length) uploadFiles(files);
+    const fs2 = [...e.dataTransfer.files].filter(f => allowed.test(f.name));
+    if (fs2.length) uploadFiles(fs2);
     else toast('非対応ファイル形式', 'error');
   });
-
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length) uploadFiles([...e.target.files]);
     e.target.value = '';
   });
 
-  // ── API: 画像一覧取得 ──
-  async function fetchImages() {
+  // ピッカー外クリックで閉じる
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#tag-picker') && !e.target.closest('.tag-btn')) closeTagPicker();
+  });
+
+  // ── API ──
+  async function fetchAll() {
     showLoading(true);
     try {
       const res = await fetch('/api/images');
-      images = await res.json();
-      renderGrid();
+      const data = await res.json();
+      files = data.files;
+      tags = data.tags;
+      renderAll();
     } catch {
-      toast('画像取得失敗', 'error');
+      toast('読み込み失敗', 'error');
     } finally {
       showLoading(false);
     }
   }
 
-  // ── API: アップロード ──
-  async function uploadFiles(files) {
+  async function uploadFiles(fileList) {
     const fd = new FormData();
-    files.forEach(f => fd.append('images', f));
-
+    fileList.forEach(f => fd.append('images', f));
     const progressEl = document.getElementById('upload-progress');
     const bar = document.getElementById('progress-bar');
     const pct = document.getElementById('progress-pct');
     const txt = document.getElementById('progress-text');
-
     progressEl.classList.add('active');
-    txt.textContent = `アップロード中 (${files.length}枚)`;
-    bar.style.width = '0%';
-    pct.textContent = '0%';
-
+    txt.textContent = `アップロード中 (${fileList.length}件)`;
+    bar.style.width = '0%'; pct.textContent = '0%';
     const xhr = new XMLHttpRequest();
     xhr.upload.addEventListener('progress', e => {
       if (e.lengthComputable) {
         const p = Math.round(e.loaded / e.total * 100);
-        bar.style.width = p + '%';
-        pct.textContent = p + '%';
+        bar.style.width = p + '%'; pct.textContent = p + '%';
       }
     });
-
     xhr.onload = async () => {
       progressEl.classList.remove('active');
       if (xhr.status === 200) {
-        const data = JSON.parse(xhr.responseText);
-        toast(`${data.count}枚 アップロード完了`, 'success');
-        await fetchImages();
-      } else {
-        toast('アップロード失敗', 'error');
-      }
+        const d = JSON.parse(xhr.responseText);
+        toast(`${d.count}件 アップロード完了`, 'success');
+        await fetchAll();
+      } else toast('アップロード失敗', 'error');
     };
-
-    xhr.onerror = () => {
-      progressEl.classList.remove('active');
-      toast('ネットワークエラー', 'error');
-    };
-
+    xhr.onerror = () => { progressEl.classList.remove('active'); toast('ネットワークエラー', 'error'); };
     xhr.open('POST', '/api/upload');
     xhr.send(fd);
   }
 
-  // ── API: 選択済みをZIPダウンロード ──
   async function downloadSelected() {
     if (selected.size === 0) return;
-    toast(`${selected.size}枚 ダウンロード開始`, 'info');
+    toast(`${selected.size}件 ダウンロード開始`, 'info');
     try {
       const res = await fetch('/api/download-zip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filenames: [...selected] })
       });
       if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `images_${Date.now()}.zip`;
-      a.click();
+      a.href = url; a.download = `files_${Date.now()}.zip`; a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      toast('ダウンロード失敗', 'error');
-    }
+    } catch { toast('ダウンロード失敗', 'error'); }
   }
 
-  // ── API: 個別ダウンロード ──
   function downloadSingle(filename, e) {
     e.stopPropagation();
     const a = document.createElement('a');
     a.href = `/api/download/${encodeURIComponent(filename)}`;
-    a.download = filename;
-    a.click();
+    a.download = filename; a.click();
   }
 
-  // ── API: 削除 ──
   async function deleteImage(filename, e) {
     e.stopPropagation();
-    if (!confirm(`「${filename}」を削除しますか？`)) return;
+    if (!confirm(`「${filename.replace(/^\d+_/, '')}」を削除しますか？`)) return;
     try {
       const res = await fetch(`/api/images/${encodeURIComponent(filename)}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       selected.delete(filename);
       updateSelectionUI();
       toast('削除完了', 'success');
-      await fetchImages();
-    } catch {
-      toast('削除失敗', 'error');
-    }
+      await fetchAll();
+    } catch { toast('削除失敗', 'error'); }
   }
 
-  // ── API: 選択済みを削除 ──
   async function deleteSelected() {
     if (selected.size === 0) return;
-    if (!confirm(`選択した ${selected.size} 枚を削除しますか？この操作は取り消せません。`)) return;
-    for (const filename of [...selected]) {
-      try {
-        await fetch(`/api/images/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-        selected.delete(filename);
-      } catch { /* skip */ }
+    if (!confirm(`選択した ${selected.size} 件を削除しますか？取り消せません。`)) return;
+    for (const fn of [...selected]) {
+      try { await fetch(`/api/images/${encodeURIComponent(fn)}`, { method: 'DELETE' }); }
+      catch { /* skip */ }
     }
+    selected.clear();
     updateSelectionUI();
     toast('削除完了', 'success');
-    await fetchImages();
+    await fetchAll();
   }
 
-  // ── 選択操作 ──
-  function toggleSelect(filename) {
-    if (selected.has(filename)) {
-      selected.delete(filename);
-    } else {
-      selected.add(filename);
+  // ── タグ管理 ──
+  function showTagCreateForm() {
+    document.getElementById('tag-create-btn').style.display = 'none';
+    document.getElementById('tag-create-form').classList.add('active');
+    document.getElementById('tag-name-input').focus();
+  }
+  function hideTagCreateForm() {
+    document.getElementById('tag-create-btn').style.display = '';
+    document.getElementById('tag-create-form').classList.remove('active');
+    document.getElementById('tag-name-input').value = '';
+  }
+  async function submitCreateTag() {
+    const name = document.getElementById('tag-name-input').value.trim();
+    if (!name) return;
+    try {
+      const res = await fetch('/api/tags', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) { const d = await res.json(); toast(d.error || 'タグ作成失敗', 'error'); return; }
+      const tag = await res.json();
+      tags.push(tag);
+      hideTagCreateForm();
+      renderTagBar();
+      renderSections();
+      toast(`タグ「${tag.name}」作成`, 'success');
+    } catch { toast('タグ作成失敗', 'error'); }
+  }
+  async function deleteTag(id, e) {
+    e.stopPropagation();
+    const tag = tags.find(t => t.id === id);
+    if (!confirm(`タグ「${tag?.name}」を削除しますか？ファイルへの紐付けも解除されます。`)) return;
+    try {
+      await fetch(`/api/tags/${id}`, { method: 'DELETE' });
+      tags = tags.filter(t => t.id !== id);
+      files.forEach(f => { f.tags = f.tags.filter(tid => tid !== id); });
+      renderAll();
+      toast('タグ削除', 'success');
+    } catch { toast('タグ削除失敗', 'error'); }
+  }
+
+  // ── タグピッカー ──
+  function openTagPicker(filename, btnEl, e) {
+    e.stopPropagation();
+    pickerFilename = filename;
+    const picker = document.getElementById('tag-picker');
+    const rect = btnEl.getBoundingClientRect();
+    const left = Math.min(rect.left, window.innerWidth - 180);
+    picker.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    picker.style.left = left + 'px';
+    renderPickerItems(filename);
+    picker.classList.add('open');
+  }
+  function closeTagPicker() {
+    document.getElementById('tag-picker').classList.remove('open');
+    pickerFilename = null;
+  }
+  function renderPickerItems(filename) {
+    const file = files.find(f => f.filename === filename);
+    const container = document.getElementById('picker-items');
+    if (tags.length === 0) {
+      container.innerHTML = '<div class="picker-empty">タグなし。先にタグを作成。</div>';
+      return;
     }
-    updateCardState(filename);
+    container.innerHTML = tags.map((tag, i) => {
+      const color = TAG_COLORS[i % TAG_COLORS.length];
+      const checked = file?.tags.includes(tag.id) ? 'checked' : '';
+      return `<div class="picker-item ${checked}" onclick="toggleFileTag('${filename}','${tag.id}',this)">
+        <div class="picker-check">
+          ${checked ? `<svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#000" stroke-width="2"><polyline points="1,5 4,8 9,2"/></svg>` : ''}
+        </div>
+        <span style="color:${color}">${escapeHtml(tag.name)}</span>
+      </div>`;
+    }).join('');
+  }
+  async function toggleFileTag(filename, tagId, itemEl) {
+    const file = files.find(f => f.filename === filename);
+    if (!file) return;
+    const idx = file.tags.indexOf(tagId);
+    if (idx >= 0) file.tags.splice(idx, 1);
+    else file.tags.push(tagId);
+    try {
+      await fetch(`/api/files/${encodeURIComponent(filename)}/tags`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagIds: file.tags })
+      });
+      renderPickerItems(filename);
+      renderSections();
+    } catch { toast('タグ更新失敗', 'error'); }
+  }
+
+  // ── 選択 ──
+  function toggleSelect(filename) {
+    selected.has(filename) ? selected.delete(filename) : selected.add(filename);
+    const card = document.querySelector(`[data-filename="${CSS.escape(filename)}"]`);
+    if (card) card.classList.toggle('selected', selected.has(filename));
     updateSelectionUI();
   }
-
   function selectAll() {
-    images.forEach(img => selected.add(img.filename));
+    files.forEach(f => selected.add(f.filename));
     document.querySelectorAll('.image-card').forEach(c => c.classList.add('selected'));
     updateSelectionUI();
   }
-
   function deselectAll() {
     selected.clear();
     document.querySelectorAll('.image-card').forEach(c => c.classList.remove('selected'));
     updateSelectionUI();
   }
-
-  function updateCardState(filename) {
-    const card = document.querySelector(`[data-filename="${CSS.escape(filename)}"]`);
-    if (card) card.classList.toggle('selected', selected.has(filename));
-  }
-
   function updateSelectionUI() {
     const n = selected.size;
     const info = document.getElementById('select-info');
     const zipBtn = document.getElementById('btn-download-zip');
     const deselBtn = document.getElementById('btn-deselect');
     const delSelBtn = document.getElementById('btn-delete-selected');
-
     if (n > 0) {
-      info.textContent = `${n}枚 選択中`;
-      info.classList.add('visible');
-      zipBtn.disabled = false;
-      deselBtn.style.display = '';
-      delSelBtn.style.display = '';
+      info.textContent = `${n}件 選択中`; info.classList.add('visible');
+      zipBtn.disabled = false; deselBtn.style.display = ''; delSelBtn.style.display = '';
     } else {
-      info.classList.remove('visible');
-      zipBtn.disabled = true;
-      deselBtn.style.display = 'none';
-      delSelBtn.style.display = 'none';
+      info.classList.remove('visible'); zipBtn.disabled = true;
+      deselBtn.style.display = 'none'; delSelBtn.style.display = 'none';
     }
+  }
+
+  // ── セクション開閉 ──
+  function toggleSection(id) {
+    const sec = document.getElementById('sec-' + id);
+    if (!sec) return;
+    if (collapsed.has(id)) { collapsed.delete(id); sec.classList.add('open'); }
+    else { collapsed.add(id); sec.classList.remove('open'); }
+    localStorage.setItem('cc-collapsed', JSON.stringify([...collapsed]));
   }
 
   // ── レンダリング ──
-  function renderGrid() {
-    const grid = document.getElementById('image-grid');
-    const empty = document.getElementById('empty-state');
-    const countEl = document.getElementById('image-count');
-
-    countEl.textContent = images.length;
+  function renderAll() {
+    document.getElementById('file-count').textContent = files.length;
     selected.clear();
     updateSelectionUI();
+    renderTagBar();
+    renderSections();
+    const empty = document.getElementById('empty-state');
+    empty.classList.toggle('visible', files.length === 0);
+  }
 
-    if (images.length === 0) {
-      grid.innerHTML = '';
-      empty.classList.add('visible');
-      return;
-    }
+  function renderTagBar() {
+    const container = document.getElementById('tag-pills');
+    container.innerHTML = tags.map((tag, i) => {
+      const color = TAG_COLORS[i % TAG_COLORS.length];
+      return `<span class="tag-pill" style="color:${color};border-color:${color};background:${color}18">
+        ${escapeHtml(tag.name)}
+        <button class="tag-del" onclick="deleteTag('${tag.id}',event)" title="タグ削除">✕</button>
+      </span> `;
+    }).join('');
+  }
 
-    empty.classList.remove('visible');
-    grid.innerHTML = '';
+  function renderSections() {
+    const container = document.getElementById('sections-container');
+    if (files.length === 0) { container.innerHTML = ''; return; }
 
-    images.forEach((img, i) => {
-      const card = document.createElement('div');
-      card.className = 'image-card';
-      card.dataset.filename = img.filename;
-      card.style.animationDelay = `${i * 30}ms`;
-      card.addEventListener('click', () => toggleSelect(img.filename));
+    const sections = [];
 
-      const displayName = img.filename.replace(/^\d+_/, '');
-      const sizeStr = formatSize(img.size);
-      const dateStr = new Date(img.uploadedAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-      const ext = displayName.split('.').pop().toLowerCase();
-      const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
-      const isPdf = ext === 'pdf';
-      const fileIconClass = isPdf ? 'pdf' : 'word';
-      const fileExtLabel = ext.toUpperCase();
-
-      const thumbHtml = isImage
-        ? `<img class="card-thumb" src="${img.url}" alt="${escapeHtml(displayName)}" loading="lazy">`
-        : `<div class="card-file-icon ${fileIconClass}">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            <span class="file-ext">${fileExtLabel}</span>
-          </div>`;
-
-      card.innerHTML = `
-        ${thumbHtml}
-        <div class="card-check">
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="2,6 5,9 10,3"/>
-          </svg>
-        </div>
-        <div class="card-actions">
-          <button class="card-action-btn" title="ダウンロード" onclick="downloadSingle('${escapeHtml(img.filename)}', event)">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M8 2v9M4 8l4 4 4-4M2 13h12"/>
-            </svg>
-          </button>
-          <button class="card-action-btn delete" title="削除" onclick="deleteImage('${escapeHtml(img.filename)}', event)">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M2 4h12M6 4V2h4v2M5 4l1 9h4l1-9"/>
-            </svg>
-          </button>
-        </div>
-        <div class="card-info">
-          <div class="card-name">${escapeHtml(displayName)}</div>
-          <div class="card-meta">${sizeStr} · ${dateStr}</div>
-        </div>
-      `;
-
-      grid.appendChild(card);
+    // タグごとにグループ化
+    tags.forEach((tag, i) => {
+      const tagFiles = files.filter(f => f.tags.includes(tag.id));
+      sections.push({ id: tag.id, name: tag.name, color: TAG_COLORS[i % TAG_COLORS.length], files: tagFiles });
     });
+
+    // タグなし
+    const untagged = files.filter(f => f.tags.length === 0);
+    sections.push({ id: UNTAGGED_ID, name: 'タグなし', color: '#555', files: untagged });
+
+    container.innerHTML = sections.map(sec => {
+      if (sec.files.length === 0 && sec.id !== UNTAGGED_ID) return '';
+      const isOpen = !collapsed.has(sec.id);
+      return `
+        <div class="tag-section ${isOpen ? 'open' : ''}" id="sec-${sec.id}">
+          <div class="tag-section-header" onclick="toggleSection('${sec.id}')">
+            <svg class="section-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 4 10 8 6 12"/>
+            </svg>
+            <span class="section-dot" style="background:${sec.color}"></span>
+            <span class="section-name">${escapeHtml(sec.name)}</span>
+            <span class="section-count">${sec.files.length}件</span>
+          </div>
+          <div class="tag-section-body">
+            <div class="tag-section-grid">
+              ${sec.files.map((f, i) => renderCard(f, i)).join('')}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderCard(file, i) {
+    const displayName = file.filename.replace(/^\d+_/, '');
+    const ext = displayName.split('.').pop().toLowerCase();
+    const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
+    const isPdf = ext === 'pdf';
+    const sizeStr = formatSize(file.size);
+    const dateStr = new Date(file.uploadedAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const isSel = selected.has(file.filename) ? 'selected' : '';
+
+    const thumb = isImage
+      ? `<img class="card-thumb" src="${file.url}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      : `<div class="card-file-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span class="file-ext-badge ${isPdf ? 'ext-pdf' : 'ext-word'}">${ext.toUpperCase()}</span>
+        </div>`;
+
+    return `<div class="image-card ${isSel}" data-filename="${escapeHtml(file.filename)}"
+        style="animation-delay:${i*20}ms" onclick="toggleSelect('${escapeHtml(file.filename)}')">
+      ${thumb}
+      <div class="card-check">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <div class="card-actions">
+        <button class="card-action-btn tag-btn" title="タグ設定"
+          onclick="openTagPicker('${escapeHtml(file.filename)}',this,event)">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 2H2v7l7 7 7-7-7-7z"/><circle cx="5" cy="5" r="1" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="card-action-btn" title="ダウンロード"
+          onclick="downloadSingle('${escapeHtml(file.filename)}',event)">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M8 2v9M4 8l4 4 4-4M2 13h12"/>
+          </svg>
+        </button>
+        <button class="card-action-btn delete" title="削除"
+          onclick="deleteImage('${escapeHtml(file.filename)}',event)">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M2 4h12M6 4V2h4v2M5 4l1 9h4l1-9"/>
+          </svg>
+        </button>
+      </div>
+      <div class="card-info">
+        <div class="card-name">${escapeHtml(displayName)}</div>
+        <div class="card-meta">${sizeStr} · ${dateStr}</div>
+      </div>
+    </div>`;
   }
 
   // ── ユーティリティ ──
-  function showLoading(on) {
-    document.getElementById('loading-state').classList.toggle('visible', on);
+  function showLoading(on) { document.getElementById('loading-state').classList.toggle('visible', on); }
+  function formatSize(b) {
+    if (b < 1024) return b + 'B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + 'KB';
+    return (b/(1024*1024)).toFixed(1) + 'MB';
   }
-
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + 'B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
-
-  function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function toast(msg, type = 'info') {
+  function toast(msg, type='info') {
     const c = document.getElementById('toast-container');
     const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.textContent = msg;
-    c.appendChild(el);
-    setTimeout(() => el.remove(), 3100);
+    el.className = `toast ${type}`; el.textContent = msg;
+    c.appendChild(el); setTimeout(() => el.remove(), 3100);
   }
 </script>
 </body>
