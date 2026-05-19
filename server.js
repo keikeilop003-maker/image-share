@@ -29,25 +29,26 @@ const storage = multer.diskStorage({
   }
 });
 
+const ALLOWED_EXT = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?)$/i;
+
 const fileFilter = (req, file, cb) => {
-  const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/i;
-  if (allowed.test(path.extname(file.originalname))) {
+  if (ALLOWED_EXT.test(path.extname(file.originalname))) {
     cb(null, true);
   } else {
-    cb(new Error('画像ファイルのみアップロード可能'), false);
+    cb(new Error('非対応ファイル形式'), false);
   }
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024, files: 50 }
+  limits: { fileSize: 100 * 1024 * 1024, files: 50 }
 });
 
-// 画像一覧取得
+// ファイル一覧取得
 app.get('/api/images', (req, res) => {
   const files = fs.readdirSync(UPLOAD_DIR)
-    .filter(f => /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/i.test(f))
+    .filter(f => ALLOWED_EXT.test(f))
     .map(f => {
       const stat = fs.statSync(path.join(UPLOAD_DIR, f));
       return {
