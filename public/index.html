@@ -16,9 +16,9 @@
       --amber-glow: rgba(245, 166, 35, 0.08);
       --red: #e05252;
       --green: #4caf78;
-      --text: #e8e4dc;
-      --text2: #777;
-      --text3: #444;
+      --text: #f0ede8;
+      --text2: #b0aca4;
+      --text3: #888;
       --radius: 4px;
       --mono: 'Courier New', 'Osaka Mono', monospace;
     }
@@ -181,18 +181,28 @@
     .image-card.selected { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber), 0 4px 20px var(--amber-dim); }
 
     .card-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--surface2); }
-    .card-file-icon {
+
+    /* 非画像ファイル用プレビュー */
+    .card-file-preview {
       width: 100%; aspect-ratio: 4/3;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; background: var(--surface2);
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 14px 14px 12px;
+      background: var(--surface2);
     }
-    .card-file-icon svg { opacity: 0.25; }
-    .file-ext-badge {
-      font-size: 10px; font-weight: bold; letter-spacing: 0.15em;
-      padding: 2px 7px; border-radius: 3px;
+    .fp-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .fp-ext {
+      font-size: 10px; font-weight: bold; letter-spacing: 0.2em;
+      padding: 2px 8px; border-radius: 2px;
     }
-    .ext-pdf { color: #e05252; border: 1px solid #e05252; }
-    .ext-word { color: #4a90d9; border: 1px solid #4a90d9; }
+    .fp-ext.pdf { color: #e05252; border: 1px solid #e05252; }
+    .fp-ext.word { color: #4a90d9; border: 1px solid #4a90d9; }
+    .fp-name {
+      font-size: 15px; color: var(--text); line-height: 1.4;
+      word-break: break-all; margin-top: 8px; flex: 1;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .fp-date { font-size: 13px; color: var(--text2); letter-spacing: 0.03em; margin-top: 8px; }
 
     .card-check {
       position: absolute; top: 8px; left: 8px;
@@ -218,7 +228,7 @@
     }
     .card-action-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
     .card-action-btn.tag-btn:hover { color: var(--amber); border-color: var(--amber); }
-    .card-action-btn.delete:hover { color: var(--red); border-color: var(--red); background: rgba(224,82,82,0.2); }
+    .card-action-btn.archive:hover { color: #f0a030; border-color: #f0a030; background: rgba(240,160,48,0.15); }
 
     .card-info { padding: 8px 12px; border-top: 1px solid var(--border); }
     .card-name { font-size: 11px; color: var(--text); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
@@ -305,11 +315,13 @@
       </svg>
       解除
     </button>
-    <button class="btn btn-danger" id="btn-delete-selected" onclick="deleteSelected()" style="display:none">
+    <button class="btn" id="btn-archive-selected" onclick="archiveSelected()" style="display:none">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 10h8l1-10"/>
+        <rect x="1" y="3" width="14" height="3" rx="1"/>
+        <path d="M2 6v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6"/>
+        <path d="M6 10h4"/>
       </svg>
-      削除
+      アーカイブ
     </button>
     <button class="btn btn-amber" id="btn-download-zip" onclick="downloadSelected()" disabled>
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -411,9 +423,28 @@
     e.target.value = '';
   });
 
-  // ピッカー外クリックで閉じる
+  // ── イベント委譲（カード上のボタン全て）──
   document.addEventListener('click', e => {
-    if (!e.target.closest('#tag-picker') && !e.target.closest('.tag-btn')) closeTagPicker();
+    // タグピッカー外クリックで閉じる
+    if (!e.target.closest('#tag-picker') && !e.target.closest('[data-action="tag"]')) {
+      closeTagPicker();
+    }
+
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
+      e.stopPropagation();
+      const card = btn.closest('[data-filename]');
+      const filename = card?.dataset.filename;
+      if (!filename) return;
+      const action = btn.dataset.action;
+      if (action === 'archive') handleArchive([filename]);
+      else if (action === 'download') handleDownload(filename);
+      else if (action === 'tag') openTagPicker(filename, btn, e);
+      return;
+    }
+
+    const card = e.target.closest('.image-card');
+    if (card) toggleSelect(card.dataset.filename);
   });
 
   // ── API ──
@@ -479,37 +510,33 @@
     } catch { toast('ダウンロード失敗', 'error'); }
   }
 
-  function downloadSingle(filename, e) {
-    e.stopPropagation();
+  function handleDownload(filename) {
     const a = document.createElement('a');
     a.href = `/api/download/${encodeURIComponent(filename)}`;
     a.download = filename; a.click();
   }
 
-  async function deleteImage(filename, e) {
-    e.stopPropagation();
-    if (!confirm(`「${filename.replace(/^\d+_/, '')}」を削除しますか？`)) return;
+  async function handleArchive(filenames) {
+    const label = filenames.length === 1
+      ? files.find(f => f.filename === filenames[0])?.displayName || filenames[0]
+      : `${filenames.length}件`;
+    if (!confirm(`「${label}」をアーカイブしますか？`)) return;
     try {
-      const res = await fetch(`/api/images/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+      const res = await fetch('/api/archive', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filenames })
+      });
       if (!res.ok) throw new Error();
-      selected.delete(filename);
+      filenames.forEach(f => selected.delete(f));
       updateSelectionUI();
-      toast('削除完了', 'success');
+      toast('アーカイブ完了', 'success');
       await fetchAll();
-    } catch { toast('削除失敗', 'error'); }
+    } catch { toast('アーカイブ失敗', 'error'); }
   }
 
-  async function deleteSelected() {
+  async function archiveSelected() {
     if (selected.size === 0) return;
-    if (!confirm(`選択した ${selected.size} 件を削除しますか？取り消せません。`)) return;
-    for (const fn of [...selected]) {
-      try { await fetch(`/api/images/${encodeURIComponent(fn)}`, { method: 'DELETE' }); }
-      catch { /* skip */ }
-    }
-    selected.clear();
-    updateSelectionUI();
-    toast('削除完了', 'success');
-    await fetchAll();
+    await handleArchive([...selected]);
   }
 
   // ── タグ管理 ──
@@ -625,13 +652,13 @@
     const info = document.getElementById('select-info');
     const zipBtn = document.getElementById('btn-download-zip');
     const deselBtn = document.getElementById('btn-deselect');
-    const delSelBtn = document.getElementById('btn-delete-selected');
+    const archSelBtn = document.getElementById('btn-archive-selected');
     if (n > 0) {
       info.textContent = `${n}件 選択中`; info.classList.add('visible');
-      zipBtn.disabled = false; deselBtn.style.display = ''; delSelBtn.style.display = '';
+      zipBtn.disabled = false; deselBtn.style.display = ''; archSelBtn.style.display = '';
     } else {
       info.classList.remove('visible'); zipBtn.disabled = true;
-      deselBtn.style.display = 'none'; delSelBtn.style.display = 'none';
+      deselBtn.style.display = 'none'; archSelBtn.style.display = 'none';
     }
   }
 
@@ -705,26 +732,29 @@
   }
 
   function renderCard(file, i) {
-    const displayName = file.filename.replace(/^\d+_/, '');
+    const displayName = file.displayName || file.filename;
     const ext = displayName.split('.').pop().toLowerCase();
     const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
     const isPdf = ext === 'pdf';
     const sizeStr = formatSize(file.size);
-    const dateStr = new Date(file.uploadedAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const dateObj = new Date(file.uploadedAt);
+    const dateStr = dateObj.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const timeStr = dateObj.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
     const isSel = selected.has(file.filename) ? 'selected' : '';
 
     const thumb = isImage
-      ? `<img class="card-thumb" src="${file.url}" alt="${escapeHtml(displayName)}" loading="lazy">`
-      : `<div class="card-file-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
-          <span class="file-ext-badge ${isPdf ? 'ext-pdf' : 'ext-word'}">${ext.toUpperCase()}</span>
+      ? `<img class="card-thumb" src="${escapeHtml(file.url)}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      : `<div class="card-file-preview">
+          <div class="fp-top">
+            <span class="fp-ext ${isPdf ? 'pdf' : 'word'}">${ext.toUpperCase()}</span>
+            <span style="font-size:10px;color:var(--text3)">${sizeStr}</span>
+          </div>
+          <div class="fp-name">${escapeHtml(displayName)}</div>
+          <div class="fp-date">${dateStr} ${timeStr}</div>
         </div>`;
 
     return `<div class="image-card ${isSel}" data-filename="${escapeHtml(file.filename)}"
-        style="animation-delay:${i*20}ms" onclick="toggleSelect('${escapeHtml(file.filename)}')">
+        style="animation-delay:${i*20}ms">
       ${thumb}
       <div class="card-check">
         <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
@@ -732,22 +762,21 @@
         </svg>
       </div>
       <div class="card-actions">
-        <button class="card-action-btn tag-btn" title="タグ設定"
-          onclick="openTagPicker('${escapeHtml(file.filename)}',this,event)">
+        <button class="card-action-btn tag-btn" data-action="tag" title="タグ設定">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M9 2H2v7l7 7 7-7-7-7z"/><circle cx="5" cy="5" r="1" fill="currentColor"/>
           </svg>
         </button>
-        <button class="card-action-btn" title="ダウンロード"
-          onclick="downloadSingle('${escapeHtml(file.filename)}',event)">
+        <button class="card-action-btn" data-action="download" title="ダウンロード">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 2v9M4 8l4 4 4-4M2 13h12"/>
           </svg>
         </button>
-        <button class="card-action-btn delete" title="削除"
-          onclick="deleteImage('${escapeHtml(file.filename)}',event)">
+        <button class="card-action-btn archive" data-action="archive" title="アーカイブ">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M2 4h12M6 4V2h4v2M5 4l1 9h4l1-9"/>
+            <rect x="1" y="2" width="14" height="3" rx="0.5"/>
+            <path d="M2 5v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5"/>
+            <path d="M6 9h4"/>
           </svg>
         </button>
       </div>

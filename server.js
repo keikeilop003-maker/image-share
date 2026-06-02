@@ -9,21 +9,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const TAGS_FILE = path.join(UPLOAD_DIR, '_tags.json');
+const ARCHIVE_DIR = path.join(UPLOAD_DIR, '_archives');
 
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!fs.existsSync(ARCHIVE_DIR)) fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static(UPLOAD_DIR));
 
-// ── タグデータ永続化 ──
+// ── タグ/メタデータ永続化 ──
 function loadTags() {
-  if (!fs.existsSync(TAGS_FILE)) return { tags: [], fileTags: {} };
-  try { return JSON.parse(fs.readFileSync(TAGS_FILE, 'utf8')); }
-  catch { return { tags: [], fileTags: {} }; }
+  if (!fs.existsSync(TAGS_FILE)) return { tags: [], fileTags: {}, fileMeta: {} };
+  try {
+    const d = JSON.parse(fs.readFileSync(TAGS_FILE, 'utf8'));
+    if (!d.fileMeta) d.fileMeta = {};
+    return d;
+  }
+  catch { return { tags: [], fileTags: {}, fileMeta: {} }; }
 }
 function saveTags(data) {
   fs.writeFileSync(TAGS_FILE, JSON.stringify(data, null, 2));
@@ -35,10 +38,8 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
     const timestamp = Date.now();
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    const safeName = base.replace(/[^a-zA-Z0-9　-鿿゠-ヿ぀-ゟ\-_]/g, '_');
-    cb(null, `${timestamp}_${safeName}${ext}`);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${timestamp}${ext}`);
   }
 });
 
@@ -49,18 +50,31 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: 100 * 1024 * 1024, files: 50 } });
 
-// ── ファイル一覧（タグ情報含む）──
+// ── ファイル直接配信（日本語ファイル名対応）──
+app.get('/file/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return res.status(400).send('Bad request');
+  }
+  const filepath = path.join(UPLOAD_DIR, filename);
+  if (!fs.existsSync(filepath)) return res.status(404).send('Not found');
+  res.sendFile(filepath);
+});
+
+// ── ファイル一覧（タグ情報・表示名含む）──
 app.get('/api/images', (req, res) => {
   const tagData = loadTags();
   const files = fs.readdirSync(UPLOAD_DIR)
     .filter(f => ALLOWED_EXT.test(f))
     .map(f => {
       const stat = fs.statSync(path.join(UPLOAD_DIR, f));
+      const meta = tagData.fileMeta[f] || {};
       return {
         filename: f,
+        displayName: meta.originalname || f,
         size: stat.size,
-        uploadedAt: stat.mtime.toISOString(),
-        url: `/uploads/${encodeURIComponent(f)}`,
+        uploadedAt: meta.uploadedAt || stat.mtime.toISOString(),
+        url: `/file/${encodeURIComponent(f)}`,
         tags: tagData.fileTags[f] || []
       };
     })
@@ -71,26 +85,52 @@ app.get('/api/images', (req, res) => {
 // ── アップロード ──
 app.post('/api/upload', upload.array('images', 50), (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'ファイルなし' });
-  const uploaded = req.files.map(f => ({
-    filename: f.filename,
-    originalname: f.originalname,
-    size: f.size,
-    url: `/uploads/${encodeURIComponent(f.filename)}`
-  }));
-  res.json({ count: uploaded.length, files: uploaded });
+  const tagData = loadTags();
+  const uploadedAt = new Date().toISOString();
+  req.files.forEach(f => {
+    let originalname = f.originalname;
+    try { originalname = decodeURIComponent(escape(f.originalname)); } catch {}
+    tagData.fileMeta[f.filename] = { originalname, uploadedAt };
+  });
+  saveTags(tagData);
+  res.json({ count: req.files.length, files: req.files.map(f => ({ filename: f.filename })) });
+});
+
+// ── アーカイブ（複数）──
+app.post('/api/archive', (req, res) => {
+  const { filenames } = req.body;
+  if (!filenames || filenames.length === 0) return res.status(400).json({ error: 'ファイル未指定' });
+  const tagData = loadTags();
+  const archived = [];
+  for (const f of filenames) {
+    if (f.includes('..') || f.includes('/') || f.includes('\\')) continue;
+    const src = path.join(UPLOAD_DIR, f);
+    const dst = path.join(ARCHIVE_DIR, f);
+    if (!fs.existsSync(src)) continue;
+    fs.renameSync(src, dst);
+    archived.push(f);
+    delete tagData.fileTags[f];
+    delete tagData.fileMeta[f];
+  }
+  saveTags(tagData);
+  res.json({ archived });
 });
 
 // ── 単一ダウンロード ──
 app.get('/api/download/:filename', (req, res) => {
-  const filepath = path.join(UPLOAD_DIR, req.params.filename);
+  const filename = decodeURIComponent(req.params.filename);
+  const tagData = loadTags();
+  const displayName = tagData.fileMeta[filename]?.originalname || filename;
+  const filepath = path.join(UPLOAD_DIR, filename);
   if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'ファイル不存在' });
-  res.download(filepath, req.params.filename);
+  res.download(filepath, displayName);
 });
 
 // ── ZIP一括ダウンロード ──
 app.post('/api/download-zip', (req, res) => {
   const { filenames } = req.body;
   if (!filenames || filenames.length === 0) return res.status(400).json({ error: 'ファイル未指定' });
+  const tagData = loadTags();
   const valid = filenames.filter(f => {
     const fp = path.join(UPLOAD_DIR, f);
     return fs.existsSync(fp) && !f.includes('..');
@@ -98,31 +138,18 @@ app.post('/api/download-zip', (req, res) => {
   if (valid.length === 0) return res.status(404).json({ error: 'ファイル不存在' });
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="files_${Date.now()}.zip"`);
-  const archive = archiver('zip', { zlib: { level: 6 } });
-  archive.on('error', err => res.status(500).json({ error: err.message }));
-  archive.pipe(res);
-  valid.forEach(f => archive.file(path.join(UPLOAD_DIR, f), { name: f }));
-  archive.finalize();
-});
-
-// ── 削除 ──
-app.delete('/api/images/:filename', (req, res) => {
-  const { filename } = req.params;
-  if (filename.includes('..')) return res.status(400).json({ error: '不正なパス' });
-  const filepath = path.join(UPLOAD_DIR, filename);
-  if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'ファイル不存在' });
-  fs.unlinkSync(filepath);
-  // タグ情報からも削除
-  const data = loadTags();
-  delete data.fileTags[filename];
-  saveTags(data);
-  res.json({ deleted: filename });
+  const arc = archiver('zip', { zlib: { level: 6 } });
+  arc.on('error', err => res.status(500).json({ error: err.message }));
+  arc.pipe(res);
+  valid.forEach(f => {
+    const displayName = tagData.fileMeta[f]?.originalname || f;
+    arc.file(path.join(UPLOAD_DIR, f), { name: displayName });
+  });
+  arc.finalize();
 });
 
 // ── タグ一覧 ──
-app.get('/api/tags', (req, res) => {
-  res.json(loadTags().tags);
-});
+app.get('/api/tags', (req, res) => res.json(loadTags().tags));
 
 // ── タグ作成 ──
 app.post('/api/tags', (req, res) => {
@@ -150,7 +177,7 @@ app.delete('/api/tags/:id', (req, res) => {
 
 // ── ファイルのタグ更新 ──
 app.put('/api/files/:filename/tags', (req, res) => {
-  const { filename } = req.params;
+  const filename = decodeURIComponent(req.params.filename);
   if (filename.includes('..')) return res.status(400).json({ error: '不正なパス' });
   const { tagIds } = req.body;
   const data = loadTags();
