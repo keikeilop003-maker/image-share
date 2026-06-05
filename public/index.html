@@ -195,8 +195,10 @@
       font-size: 10px; font-weight: bold; letter-spacing: 0.2em;
       padding: 2px 8px; border-radius: 2px;
     }
-    .fp-ext.pdf { color: #e05252; border: 1px solid #e05252; }
+    .fp-ext.pdf  { color: #e05252; border: 1px solid #e05252; }
     .fp-ext.word { color: #4a90d9; border: 1px solid #4a90d9; }
+    .fp-ext.txt  { color: var(--green); border: 1px solid var(--green); }
+    .fp-ext.rtf  { color: #9b59b6; border: 1px solid #9b59b6; }
     .fp-name {
       font-size: 15px; color: var(--text); line-height: 1.4;
       word-break: break-all; margin-top: 8px; flex: 1;
@@ -217,9 +219,8 @@
 
     .card-actions {
       position: absolute; top: 8px; right: 8px;
-      display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
+      display: flex; gap: 4px;
     }
-    .image-card:hover .card-actions { opacity: 1; }
     .card-action-btn {
       width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.15);
       background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 3px;
@@ -229,10 +230,21 @@
     .card-action-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
     .card-action-btn.tag-btn:hover { color: var(--amber); border-color: var(--amber); }
     .card-action-btn.archive:hover { color: #f0a030; border-color: #f0a030; background: rgba(240,160,48,0.15); }
+    .card-action-btn.delete:hover  { color: var(--red); border-color: var(--red); background: rgba(224,82,82,0.15); }
 
     .card-info { padding: 8px 12px; border-top: 1px solid var(--border); }
     .card-name { font-size: 11px; color: var(--text); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
     .card-meta { font-size: 10px; color: var(--text3); letter-spacing: 0.03em; }
+
+    /* ── アーカイブセクション ── */
+    .archive-section-wrap { margin-top: 32px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .archive-item-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; position: relative;
+      opacity: 0.6; transition: opacity 0.15s, border-color 0.15s;
+      animation: fadeIn 0.2s ease both;
+    }
+    .archive-item-card:hover { opacity: 0.9; border-color: var(--border-hover); }
 
     /* ── タグピッカー ── */
     .tag-picker {
@@ -334,7 +346,7 @@
 
 <main>
   <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-    <input type="file" id="file-input" multiple accept="image/*,.pdf,.doc,.docx">
+    <input type="file" id="file-input" multiple accept="image/*,.pdf,.doc,.docx,.txt,.rtf">
     <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
       <rect x="4" y="8" width="40" height="32" rx="3"/>
       <circle cx="16" cy="20" r="3"/>
@@ -342,7 +354,7 @@
       <path d="M32 16v-8M28 12l4-4 4 4"/>
     </svg>
     <p class="upload-primary">ここにドラッグ &amp; ドロップ、または<span class="hl">クリックして選択</span></p>
-    <p class="upload-sub">画像 · PDF · Word &nbsp;·&nbsp; 最大 100MB / ファイル</p>
+    <p class="upload-sub">画像 · PDF · Word · テキスト &nbsp;·&nbsp; 最大 100MB / ファイル</p>
   </div>
 
   <div class="upload-progress" id="upload-progress">
@@ -381,6 +393,7 @@
   <div class="loading-state" id="loading-state">読み込み中</div>
   <div class="empty-state" id="empty-state"><p>ファイルなし<br>上のエリアからアップロード</p></div>
   <div id="sections-container"></div>
+  <div id="archive-section-container"></div>
 </main>
 
 <!-- タグピッカー -->
@@ -402,6 +415,8 @@
   const selected = new Set();
   const collapsed = new Set(JSON.parse(localStorage.getItem('cc-collapsed') || '[]'));
   let pickerFilename = null;
+  let archivedFiles = [];
+  let archiveCollapsed = localStorage.getItem('cc-arch-collapsed') !== 'false';
 
   // ── 初期化 ──
   fetchAll();
@@ -413,7 +428,7 @@
   zone.addEventListener('drop', e => {
     e.preventDefault();
     zone.classList.remove('dragover');
-    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?)$/i;
+    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|txt|rtf)$/i;
     const fs2 = [...e.dataTransfer.files].filter(f => allowed.test(f.name));
     if (fs2.length) uploadFiles(fs2);
     else toast('非対応ファイル形式', 'error');
@@ -433,11 +448,17 @@
     const btn = e.target.closest('[data-action]');
     if (btn) {
       e.stopPropagation();
+      const action = btn.dataset.action;
+      if (action === 'dl-archive') {
+        const fn = btn.dataset.archiveFn;
+        if (fn) { const a = document.createElement('a'); a.href = `/api/download-archive/${encodeURIComponent(fn)}`; a.download = fn; a.click(); }
+        return;
+      }
       const card = btn.closest('[data-filename]');
       const filename = card?.dataset.filename;
       if (!filename) return;
-      const action = btn.dataset.action;
       if (action === 'archive') handleArchive([filename]);
+      else if (action === 'delete') handleDelete([filename]);
       else if (action === 'download') handleDownload(filename);
       else if (action === 'tag') openTagPicker(filename, btn, e);
       return;
@@ -451,10 +472,12 @@
   async function fetchAll() {
     showLoading(true);
     try {
-      const res = await fetch('/api/images');
-      const data = await res.json();
+      const [r1, r2] = await Promise.all([fetch('/api/images'), fetch('/api/archives')]);
+      const data = await r1.json();
+      const archData = r2.ok ? await r2.json() : { files: [] };
       files = data.files;
       tags = data.tags;
+      archivedFiles = archData.files;
       renderAll();
     } catch {
       toast('読み込み失敗', 'error');
@@ -517,10 +540,6 @@
   }
 
   async function handleArchive(filenames) {
-    const label = filenames.length === 1
-      ? files.find(f => f.filename === filenames[0])?.displayName || filenames[0]
-      : `${filenames.length}件`;
-    if (!confirm(`「${label}」をアーカイブしますか？`)) return;
     try {
       const res = await fetch('/api/archive', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -532,6 +551,20 @@
       toast('アーカイブ完了', 'success');
       await fetchAll();
     } catch { toast('アーカイブ失敗', 'error'); }
+  }
+
+  async function handleDelete(filenames) {
+    try {
+      const res = await fetch('/api/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filenames })
+      });
+      if (!res.ok) throw new Error();
+      filenames.forEach(f => selected.delete(f));
+      updateSelectionUI();
+      toast('削除完了', 'success');
+      await fetchAll();
+    } catch { toast('削除失敗', 'error'); }
   }
 
   async function archiveSelected() {
@@ -678,6 +711,7 @@
     updateSelectionUI();
     renderTagBar();
     renderSections();
+    renderArchiveSection();
     const empty = document.getElementById('empty-state');
     empty.classList.toggle('visible', files.length === 0);
   }
@@ -735,7 +769,7 @@
     const displayName = file.displayName || file.filename;
     const ext = displayName.split('.').pop().toLowerCase();
     const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
-    const isPdf = ext === 'pdf';
+    const extClass = { pdf: 'pdf', doc: 'word', docx: 'word', rtf: 'rtf', txt: 'txt' }[ext] || 'word';
     const sizeStr = formatSize(file.size);
     const dateObj = new Date(file.uploadedAt);
     const dateStr = dateObj.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -746,7 +780,7 @@
       ? `<img class="card-thumb" src="${escapeHtml(file.url)}" alt="${escapeHtml(displayName)}" loading="lazy">`
       : `<div class="card-file-preview">
           <div class="fp-top">
-            <span class="fp-ext ${isPdf ? 'pdf' : 'word'}">${ext.toUpperCase()}</span>
+            <span class="fp-ext ${extClass}">${ext.toUpperCase()}</span>
             <span style="font-size:10px;color:var(--text3)">${sizeStr}</span>
           </div>
           <div class="fp-name">${escapeHtml(displayName)}</div>
@@ -777,6 +811,82 @@
             <rect x="1" y="2" width="14" height="3" rx="0.5"/>
             <path d="M2 5v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5"/>
             <path d="M6 9h4"/>
+          </svg>
+        </button>
+        <button class="card-action-btn delete" data-action="delete" title="削除">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9"/>
+          </svg>
+        </button>
+      </div>
+      <div class="card-info">
+        <div class="card-name">${escapeHtml(displayName)}</div>
+        <div class="card-meta">${sizeStr} · ${dateStr}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── アーカイブセクション ──
+  function renderArchiveSection() {
+    const container = document.getElementById('archive-section-container');
+    if (archivedFiles.length === 0) { container.innerHTML = ''; return; }
+    const isOpen = !archiveCollapsed;
+    container.innerHTML = `
+      <div class="archive-section-wrap">
+        <div class="tag-section ${isOpen ? 'open' : ''}" id="sec-archive">
+          <div class="tag-section-header" onclick="toggleArchiveSection()">
+            <svg class="section-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 4 10 8 6 12"/>
+            </svg>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.5">
+              <rect x="1" y="2" width="14" height="4" rx="1"/>
+              <path d="M2 6v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6"/>
+              <path d="M6 10h4"/>
+            </svg>
+            <span class="section-name" style="color:var(--text3)">アーカイブ</span>
+            <span class="section-count">${archivedFiles.length}件</span>
+          </div>
+          <div class="tag-section-body">
+            <div class="tag-section-grid">
+              ${archivedFiles.map((f, i) => renderArchiveCard(f, i)).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function toggleArchiveSection() {
+    archiveCollapsed = !archiveCollapsed;
+    localStorage.setItem('cc-arch-collapsed', String(archiveCollapsed));
+    const sec = document.getElementById('sec-archive');
+    if (sec) sec.classList.toggle('open', !archiveCollapsed);
+  }
+
+  function renderArchiveCard(file, i) {
+    const displayName = file.displayName || file.filename;
+    const ext = displayName.split('.').pop().toLowerCase();
+    const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
+    const extClass = { pdf: 'pdf', doc: 'word', docx: 'word', rtf: 'rtf', txt: 'txt' }[ext] || 'word';
+    const sizeStr = formatSize(file.size);
+    const dateObj = new Date(file.uploadedAt);
+    const dateStr = dateObj.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const timeStr = dateObj.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    const thumb = isImage
+      ? `<img class="card-thumb" src="/archive-file/${encodeURIComponent(file.filename)}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      : `<div class="card-file-preview">
+          <div class="fp-top">
+            <span class="fp-ext ${extClass}">${ext.toUpperCase()}</span>
+            <span style="font-size:10px;color:var(--text3)">${sizeStr}</span>
+          </div>
+          <div class="fp-name">${escapeHtml(displayName)}</div>
+          <div class="fp-date">${dateStr} ${timeStr}</div>
+        </div>`;
+    return `<div class="archive-item-card" style="animation-delay:${i*20}ms">
+      ${thumb}
+      <div class="card-actions">
+        <button class="card-action-btn" data-action="dl-archive" data-archive-fn="${escapeHtml(file.filename)}" title="ダウンロード">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M8 2v9M4 8l4 4 4-4M2 13h12"/>
           </svg>
         </button>
       </div>

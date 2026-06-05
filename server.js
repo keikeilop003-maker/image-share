@@ -32,7 +32,7 @@ function saveTags(data) {
   fs.writeFileSync(TAGS_FILE, JSON.stringify(data, null, 2));
 }
 
-const ALLOWED_EXT = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?)$/i;
+const ALLOWED_EXT = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|txt|rtf)$/i;
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
@@ -110,10 +110,68 @@ app.post('/api/archive', (req, res) => {
     fs.renameSync(src, dst);
     archived.push(f);
     delete tagData.fileTags[f];
-    delete tagData.fileMeta[f];
   }
   saveTags(tagData);
   res.json({ archived });
+});
+
+// ── ファイル削除 ──
+app.post('/api/delete', (req, res) => {
+  const { filenames } = req.body;
+  if (!filenames || filenames.length === 0) return res.status(400).json({ error: 'ファイル未指定' });
+  const tagData = loadTags();
+  const deleted = [];
+  for (const f of filenames) {
+    if (f.includes('..') || f.includes('/') || f.includes('\\')) continue;
+    const fp = path.join(UPLOAD_DIR, f);
+    if (!fs.existsSync(fp)) continue;
+    fs.unlinkSync(fp);
+    deleted.push(f);
+    delete tagData.fileTags[f];
+    delete tagData.fileMeta[f];
+  }
+  saveTags(tagData);
+  res.json({ deleted });
+});
+
+// ── アーカイブファイル配信 ──
+app.get('/archive-file/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return res.status(400).send('Bad request');
+  }
+  const filepath = path.join(ARCHIVE_DIR, filename);
+  if (!fs.existsSync(filepath)) return res.status(404).send('Not found');
+  res.sendFile(filepath);
+});
+
+// ── アーカイブ一覧 ──
+app.get('/api/archives', (req, res) => {
+  const tagData = loadTags();
+  const files = fs.readdirSync(ARCHIVE_DIR)
+    .filter(f => ALLOWED_EXT.test(f))
+    .map(f => {
+      const stat = fs.statSync(path.join(ARCHIVE_DIR, f));
+      const meta = tagData.fileMeta[f] || {};
+      return {
+        filename: f,
+        displayName: meta.originalname || f,
+        size: stat.size,
+        uploadedAt: meta.uploadedAt || stat.mtime.toISOString()
+      };
+    })
+    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  res.json({ files });
+});
+
+// ── アーカイブ単一ダウンロード ──
+app.get('/api/download-archive/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  const tagData = loadTags();
+  const displayName = tagData.fileMeta[filename]?.originalname || filename;
+  const filepath = path.join(ARCHIVE_DIR, filename);
+  if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'ファイル不存在' });
+  res.download(filepath, displayName);
 });
 
 // ── 単一ダウンロード ──
