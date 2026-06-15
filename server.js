@@ -32,7 +32,7 @@ function saveTags(data) {
   fs.writeFileSync(TAGS_FILE, JSON.stringify(data, null, 2));
 }
 
-const ALLOWED_EXT = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|txt|rtf|mp3|wav|m4a|ogg|flac|aac)$/i;
+const ALLOWED_EXT = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|pptx?|txt|rtf|mp3|wav|m4a|ogg|flac|aac)$/i;
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
