@@ -195,10 +195,20 @@
       font-size: 10px; font-weight: bold; letter-spacing: 0.2em;
       padding: 2px 8px; border-radius: 2px;
     }
-    .fp-ext.pdf  { color: #e05252; border: 1px solid #e05252; }
-    .fp-ext.word { color: #4a90d9; border: 1px solid #4a90d9; }
-    .fp-ext.txt  { color: var(--green); border: 1px solid var(--green); }
-    .fp-ext.rtf  { color: #9b59b6; border: 1px solid #9b59b6; }
+    .fp-ext.pdf   { color: #e05252; border: 1px solid #e05252; }
+    .fp-ext.word  { color: #4a90d9; border: 1px solid #4a90d9; }
+    .fp-ext.txt   { color: var(--green); border: 1px solid var(--green); }
+    .fp-ext.rtf   { color: #9b59b6; border: 1px solid #9b59b6; }
+    .fp-ext.audio { color: #1abc9c; border: 1px solid #1abc9c; }
+    .card-audio-preview {
+      width: 100%; padding: 14px 14px 10px;
+      background: var(--surface2);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .card-audio-preview audio {
+      width: 100%; height: 28px; margin-top: 4px;
+      accent-color: var(--amber);
+    }
     .fp-name {
       font-size: 15px; color: var(--text); line-height: 1.4;
       word-break: break-all; margin-top: 8px; flex: 1;
@@ -346,7 +356,7 @@
 
 <main>
   <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-    <input type="file" id="file-input" multiple accept="image/*,.pdf,.doc,.docx,.txt,.rtf">
+    <input type="file" id="file-input" multiple accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.rtf,.mp3,.wav,.m4a,.ogg,.flac,.aac">
     <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
       <rect x="4" y="8" width="40" height="32" rx="3"/>
       <circle cx="16" cy="20" r="3"/>
@@ -354,7 +364,7 @@
       <path d="M32 16v-8M28 12l4-4 4 4"/>
     </svg>
     <p class="upload-primary">ここにドラッグ &amp; ドロップ、または<span class="hl">クリックして選択</span></p>
-    <p class="upload-sub">画像 · PDF · Word · テキスト &nbsp;·&nbsp; 最大 100MB / ファイル</p>
+    <p class="upload-sub">画像 · PDF · Word · テキスト · 音声 &nbsp;·&nbsp; 最大 100MB / ファイル</p>
   </div>
 
   <div class="upload-progress" id="upload-progress">
@@ -428,7 +438,7 @@
   zone.addEventListener('drop', e => {
     e.preventDefault();
     zone.classList.remove('dragover');
-    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|txt|rtf)$/i;
+    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|pdf|docx?|txt|rtf|mp3|wav|m4a|ogg|flac|aac)$/i;
     const fs2 = [...e.dataTransfer.files].filter(f => allowed.test(f.name));
     if (fs2.length) uploadFiles(fs2);
     else toast('非対応ファイル形式', 'error');
@@ -465,7 +475,7 @@
     }
 
     const card = e.target.closest('.image-card');
-    if (card) toggleSelect(card.dataset.filename);
+    if (card && !e.target.closest('audio')) toggleSelect(card.dataset.filename);
   });
 
   // ── API ──
@@ -769,7 +779,8 @@
     const displayName = file.displayName || file.filename;
     const ext = displayName.split('.').pop().toLowerCase();
     const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
-    const extClass = { pdf: 'pdf', doc: 'word', docx: 'word', rtf: 'rtf', txt: 'txt' }[ext] || 'word';
+    const isAudio = /^(mp3|wav|m4a|ogg|flac|aac)$/.test(ext);
+    const extClass = { pdf:'pdf', doc:'word', docx:'word', rtf:'rtf', txt:'txt', mp3:'audio', wav:'audio', m4a:'audio', ogg:'audio', flac:'audio', aac:'audio' }[ext] || 'word';
     const sizeStr = formatSize(file.size);
     const dateObj = new Date(file.uploadedAt);
     const dateStr = dateObj.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -778,6 +789,15 @@
 
     const thumb = isImage
       ? `<img class="card-thumb" src="${escapeHtml(file.url)}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      : isAudio
+      ? `<div class="card-audio-preview">
+          <div class="fp-top">
+            <span class="fp-ext audio">${ext.toUpperCase()}</span>
+            <span style="font-size:10px;color:var(--text3)">${sizeStr}</span>
+          </div>
+          <div class="fp-name">${escapeHtml(displayName)}</div>
+          <audio controls src="${escapeHtml(file.url)}" preload="none"></audio>
+        </div>`
       : `<div class="card-file-preview">
           <div class="fp-top">
             <span class="fp-ext ${extClass}">${ext.toUpperCase()}</span>
@@ -866,13 +886,24 @@
     const displayName = file.displayName || file.filename;
     const ext = displayName.split('.').pop().toLowerCase();
     const isImage = /^(jpg|jpeg|png|gif|webp|svg|bmp|tiff?)$/.test(ext);
-    const extClass = { pdf: 'pdf', doc: 'word', docx: 'word', rtf: 'rtf', txt: 'txt' }[ext] || 'word';
+    const isAudio = /^(mp3|wav|m4a|ogg|flac|aac)$/.test(ext);
+    const extClass = { pdf:'pdf', doc:'word', docx:'word', rtf:'rtf', txt:'txt', mp3:'audio', wav:'audio', m4a:'audio', ogg:'audio', flac:'audio', aac:'audio' }[ext] || 'word';
     const sizeStr = formatSize(file.size);
     const dateObj = new Date(file.uploadedAt);
     const dateStr = dateObj.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
     const timeStr = dateObj.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    const archSrc = `/archive-file/${encodeURIComponent(file.filename)}`;
     const thumb = isImage
-      ? `<img class="card-thumb" src="/archive-file/${encodeURIComponent(file.filename)}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      ? `<img class="card-thumb" src="${archSrc}" alt="${escapeHtml(displayName)}" loading="lazy">`
+      : isAudio
+      ? `<div class="card-audio-preview">
+          <div class="fp-top">
+            <span class="fp-ext audio">${ext.toUpperCase()}</span>
+            <span style="font-size:10px;color:var(--text3)">${sizeStr}</span>
+          </div>
+          <div class="fp-name">${escapeHtml(displayName)}</div>
+          <audio controls src="${archSrc}" preload="none"></audio>
+        </div>`
       : `<div class="card-file-preview">
           <div class="fp-top">
             <span class="fp-ext ${extClass}">${ext.toUpperCase()}</span>
